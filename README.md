@@ -1,11 +1,16 @@
 # TextToWav
 
-A small Windows WinForms application that previews typed text and saves it as a WAV file.
+A small C# WinForms application that lets you preview text with different Text-To-Speech voices, and save the output as a WAV file.
+
+<p align="center">
+<picture>
+<img width="680" height="607" alt="A screenshot of the application, showing a textbox, a dropdown voice selector, a rate slider, a volume slider, and a pitch slider. Below these are three buttons: 'Preview', 'Stop' and 'Save as WAV'." src="https://github.com/user-attachments/assets/c8336223-98fb-4bd0-a4d5-cd88b3546b72" />
+</picture>
+</p>
 
 ## Features
 
-- Type text into a textbox
-- Preview speech using SAPI/OneCore voices
+- Preview entered text using SAPI/OneCore voices
 - Adjust speech rate, volume, and pitch
 - Save the result as a `.wav` file
 
