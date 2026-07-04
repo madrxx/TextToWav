@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore and build Release
+        shell: pwsh
+        run: msbuild TextToWav.csproj /restore /p:Configuration=Release /p:Platform="AnyCPU"
+
+      - name: Prepare artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          $releaseDir = "bin\Release"
+          $zipPath = "artifacts\TextToWav-${{ github.ref_name }}.zip"
+          Get-ChildItem $releaseDir -File |
+            Where-Object { $_.Extension -ne ".pdb" } |
+            Compress-Archive -DestinationPath $zipPath -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.zip
