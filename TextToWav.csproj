@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{FE3AB368-0D5A-430D-802C-DCEF3A62C095}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>TextToWavSapi</RootNamespace>
-    <AssemblyName>TextToWavSapi</AssemblyName>
+    <RootNamespace>TextToWav</RootNamespace>
+    <AssemblyName>TextToWav</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
