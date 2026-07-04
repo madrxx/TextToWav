@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
 using TextToWav.Models;
@@ -8,183 +9,43 @@ using TextToWav.Utilities;
 
 namespace TextToWav
 {
-    public class MainForm : Form
+    public partial class MainForm : Form
     {
-        private TextBox inputTextBox;
-        private Button previewButton;
-        private Button stopButton;
-        private Button saveButton;
-        private ComboBox voiceComboBox;
-        private Label voiceLabel;
-        private TrackBar rateTrackBar;
-        private Label rateLabel;
-        private TrackBar volumeTrackBar;
-        private Label volumeLabel;
-        private TrackBar pitchTrackBar;
-        private Label pitchLabel;
-
-        private readonly VoiceCatalog voiceCatalog;
-        private readonly SpeechExportService exportService;
-        private readonly SpeechPreviewService previewService;
+        private VoiceCatalog voiceCatalog;
+        private SpeechExportService exportService;
+        private SpeechPreviewService previewService;
 
         public MainForm()
         {
+            InitializeComponent();
+
+            if (IsInDesignMode())
+            {
+                return;
+            }
+
             voiceCatalog = new VoiceCatalog();
             exportService = new SpeechExportService();
             previewService = new SpeechPreviewService(exportService);
 
-            Text = "Text to WAV";
-            Width = 600;
-            Height = 505;
-            StartPosition = FormStartPosition.CenterScreen;
             Icon = WindowsSoundIcon.GetIcon();
-
-            inputTextBox = new TextBox
-            {
-                Multiline = true,
-                ScrollBars = ScrollBars.Vertical,
-                Left = 15,
-                Top = 15,
-                Width = 550,
-                Height = 200,
-                Text = "Type something here, then preview it or save it as a WAV file."
-            };
-
-            voiceLabel = new Label
-            {
-                Left = 15,
-                Top = 235,
-                Width = 80,
-                Text = "Voice:"
-            };
-
-            voiceComboBox = new ComboBox
-            {
-                Left = 100,
-                Top = 230,
-                Width = 465,
-                DropDownStyle = ComboBoxStyle.DropDownList
-            };
-
-            rateLabel = new Label
-            {
-                Left = 15,
-                Top = 275,
-                Width = 120,
-                Text = "Rate: 0"
-            };
-
-            rateTrackBar = new TrackBar
-            {
-                Left = 100,
-                Top = 265,
-                Width = 465,
-                Minimum = -10,
-                Maximum = 10,
-                Value = 0,
-                TickFrequency = 1
-            };
-
-            volumeLabel = new Label
-            {
-                Left = 15,
-                Top = 320,
-                Width = 120,
-                Text = "Volume: 100"
-            };
-
-            volumeTrackBar = new TrackBar
-            {
-                Left = 100,
-                Top = 310,
-                Width = 465,
-                Minimum = 0,
-                Maximum = 100,
-                Value = 100,
-                TickFrequency = 10
-            };
-
-            pitchLabel = new Label
-            {
-                Left = 15,
-                Top = 365,
-                Width = 120,
-                Text = "Pitch: 0"
-            };
-
-            pitchTrackBar = new TrackBar
-            {
-                Left = 100,
-                Top = 355,
-                Width = 465,
-                Minimum = -10,
-                Maximum = 10,
-                Value = 0,
-                TickFrequency = 1
-            };
-
-            previewButton = new Button
-            {
-                Left = 15,
-                Top = 420,
-                Width = 175,
-                Height = 32,
-                Text = "Preview"
-            };
-
-            stopButton = new Button
-            {
-                Left = 205,
-                Top = 420,
-                Width = 175,
-                Height = 32,
-                Text = "Stop"
-            };
-
-            saveButton = new Button
-            {
-                Left = 395,
-                Top = 420,
-                Width = 170,
-                Height = 32,
-                Text = "Save as WAV"
-            };
-
-            Controls.Add(inputTextBox);
-            Controls.Add(voiceLabel);
-            Controls.Add(voiceComboBox);
-            Controls.Add(rateLabel);
-            Controls.Add(rateTrackBar);
-            Controls.Add(volumeLabel);
-            Controls.Add(volumeTrackBar);
-            Controls.Add(pitchLabel);
-            Controls.Add(pitchTrackBar);
-            Controls.Add(previewButton);
-            Controls.Add(stopButton);
-            Controls.Add(saveButton);
 
             LoadVoices();
 
-            rateTrackBar.ValueChanged += (s, e) =>
-            {
-                rateLabel.Text = "Rate: " + rateTrackBar.Value;
-            };
-
-            volumeTrackBar.ValueChanged += (s, e) =>
-            {
-                volumeLabel.Text = "Volume: " + volumeTrackBar.Value;
-            };
-
-            pitchTrackBar.ValueChanged += (s, e) =>
-            {
-                pitchLabel.Text = "Pitch: " + pitchTrackBar.Value;
-            };
+            rateTrackBar.ValueChanged += RateTrackBar_ValueChanged;
+            volumeTrackBar.ValueChanged += VolumeTrackBar_ValueChanged;
+            pitchTrackBar.ValueChanged += PitchTrackBar_ValueChanged;
 
             previewButton.Click += PreviewButton_Click;
             stopButton.Click += StopButton_Click;
             saveButton.Click += SaveButton_Click;
 
             FormClosing += MainForm_FormClosing;
+        }
+
+        private bool IsInDesignMode()
+        {
+            return LicenseManager.UsageMode == LicenseUsageMode.Designtime;
         }
 
         private void LoadVoices()
@@ -265,6 +126,21 @@ namespace TextToWav
             };
         }
 
+        private void RateTrackBar_ValueChanged(object sender, EventArgs e)
+        {
+            rateLabel.Text = "Rate: " + rateTrackBar.Value;
+        }
+
+        private void VolumeTrackBar_ValueChanged(object sender, EventArgs e)
+        {
+            volumeLabel.Text = "Volume: " + volumeTrackBar.Value;
+        }
+
+        private void PitchTrackBar_ValueChanged(object sender, EventArgs e)
+        {
+            pitchLabel.Text = "Pitch: " + pitchTrackBar.Value;
+        }
+
         private async void PreviewButton_Click(object sender, EventArgs e)
         {
             string text = inputTextBox.Text.Trim();
@@ -293,7 +169,10 @@ namespace TextToWav
         {
             try
             {
-                previewService.Stop();
+                if (previewService != null)
+                {
+                    previewService.Stop();
+                }
             }
             catch
             {
@@ -375,7 +254,11 @@ namespace TextToWav
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            previewService.Dispose();
+            if (previewService != null)
+            {
+                previewService.Dispose();
+                previewService = null;
+            }
         }
     }
 }
